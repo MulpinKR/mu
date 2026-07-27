@@ -47,7 +47,7 @@ cp target/release/mu /usr/local/sbin/mu
 echo "permit $(whoami)" > /etc/mu.conf
 ```
 
-### Gentoo (GURU)
+### Gentoo (GURU, only in case if it available)
 
 ```sh
 eselect repository enable guru
