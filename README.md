@@ -21,7 +21,7 @@ sudo chmod u+s target/release/mu
 sudo cp target/release/mu /usr/local/bin/mu
 ```
 
-### Gentoo (GURU)
+### Gentoo (GURU, yet its program is not in guru - waiting for guru maintainers to add program) 
 
 ```sh
 eselect repository enable guru
