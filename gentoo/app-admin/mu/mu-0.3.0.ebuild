@@ -3,9 +3,16 @@
 
 EAPI=8
 
+inherit cargo
+
+CRATES=""
+
 DESCRIPTION="Minimal privilege escalation runner — zero external deps, faster compile than doas"
 HOMEPAGE="https://github.com/MulpinKR/mu"
-SRC_URI="https://github.com/MulpinKR/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+SRC_URI="
+	https://github.com/MulpinKR/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz
+	${CARGO_CRATE_URIS}
+"
 
 LICENSE="MIT"
 SLOT="0"
@@ -13,16 +20,13 @@ KEYWORDS="~amd64"
 
 DEPEND=""
 RDEPEND=""
-BDEPEND="virtual/rust"
 
 QA_FLAGS_IGNORED="usr/sbin/mu"
 
-src_compile() {
-	cargo build --release || die
-}
-
 src_install() {
-	dosbin target/release/mu
+	cargo_src_install
+	mkdir -p "${D}/usr/sbin" || die
+	mv "${D}/usr/bin/mu" "${D}/usr/sbin/mu" || die
 }
 
 pkg_postinst() {
