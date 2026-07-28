@@ -35,6 +35,30 @@ unsafe extern "C" {
     fn localtime_r(timep: *const i64, result: *mut tm) -> *mut tm;
 }
 
+#[repr(C)]
+#[derive(Clone, Copy)]
+struct termios {
+    c_iflag: u32,
+    c_oflag: u32,
+    c_cflag: u32,
+    c_lflag: u32,
+    c_cc: [u8; 32],
+}
+
+const ECHO: u32 = 0x0008;
+const TCSANOW: i32 = 0;
+const O_RDWR: i32 = 2;
+const O_NOCTTY: i32 = 0o400;
+
+unsafe extern "C" {
+    fn tcgetattr(fd: i32, t: *mut termios) -> i32;
+    fn tcsetattr(fd: i32, act: i32, t: *const termios) -> i32;
+    fn open(path: *const i8, flags: i32, ...) -> i32;
+    fn read(fd: i32, buf: *mut u8, count: usize) -> isize;
+    fn write(fd: i32, buf: *const u8, count: usize) -> isize;
+    fn close(fd: i32) -> i32;
+}
+
 const CONFIG_PATH: &str = "/etc/mu.conf";
 const AUDIT_LOG: &str = "/var/log/mu.log";
 const FAIL_DIR: &str = "/var/log/mu/failures";
@@ -267,6 +291,39 @@ fn clear_failures(user: &str) {
     let _ = fs::remove_file(&path);
 }
 
+fn prompt_password(prompt: &str) -> String {
+    let mut orig: termios = unsafe { std::mem::zeroed() };
+    let fd = unsafe { open(b"/dev/tty\0".as_ptr() as *const i8, O_RDWR | O_NOCTTY) };
+    let use_tty = fd >= 0;
+    let out = if use_tty { fd } else { 2 };
+    let inp = if use_tty { fd } else { 0 };
+
+    unsafe { write(out, prompt.as_ptr(), prompt.len()); }
+
+    if use_tty && unsafe { tcgetattr(fd, &mut orig) } == 0 {
+        let mut raw = orig;
+        raw.c_lflag &= !ECHO;
+        unsafe { tcsetattr(fd, TCSANOW, &raw); }
+    }
+
+    let mut pass = String::new();
+    loop {
+        let mut b: u8 = 0;
+        if unsafe { read(inp, &mut b, 1) } <= 0 { break; }
+        match b {
+            b'\n' | b'\r' => break,
+            0x7f | 0x08 => { pass.pop(); }
+            c => pass.push(c as char),
+        }
+    }
+
+    if use_tty {
+        unsafe { tcsetattr(fd, TCSANOW, &orig); close(fd); }
+    }
+    unsafe { write(out, b"\n".as_ptr(), 1); }
+    pass
+}
+
 fn die(msg: &str) -> ! {
     eprintln!("mu: {msg}");
     exit(1);
@@ -320,7 +377,7 @@ fn main() {
                 let prompt = format!(
                     "mu in ({username}@{hostname}) needs password for root command: \u{1F512} "
                 );
-                let password = rpassword::prompt_password(&prompt).unwrap_or_default();
+                let password = prompt_password(&prompt);
 
                 if !verify_password(&username, &password) {
                     record_failure(&username, &cfg);
