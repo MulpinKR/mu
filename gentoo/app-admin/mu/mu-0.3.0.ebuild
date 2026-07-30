@@ -3,11 +3,12 @@
 
 EAPI=8
 
-inherit cargo
-
+RUST_MIN_VER="1.85.0"
 CRATES=""
 
-DESCRIPTION="Minimal privilege escalation runner — zero external deps, faster compile than doas"
+inherit cargo
+
+DESCRIPTION="Minimal privilege escalation runner for Gentoo"
 HOMEPAGE="https://github.com/MulpinKR/mu"
 SRC_URI="
 	https://github.com/MulpinKR/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz
@@ -18,24 +19,5 @@ LICENSE="MIT"
 SLOT="0"
 KEYWORDS="~amd64"
 
-DEPEND=""
-RDEPEND=""
-
-QA_FLAGS_IGNORED="usr/sbin/mu"
-
-src_install() {
-	cargo_src_install
-	mkdir -p "${D}/usr/sbin" || die
-	mv "${D}/usr/bin/mu" "${D}/usr/sbin/mu" || die
-}
-
-pkg_postinst() {
-	einfo ""
-	einfo "mu needs the setuid bit to function:"
-	einfo "  # chown root:root /usr/sbin/mu"
-	einfo "  # chmod u+s /usr/sbin/mu"
-	einfo "  # echo \"permit \$(whoami)\" > /etc/mu.conf"
-	einfo ""
-	einfo "Audit log: /var/log/mu.log"
-	einfo ""
-}
+DEPEND="virtual/libcrypt:="
+RDEPEND="${DEPEND}"
