@@ -53,7 +53,7 @@ echo "permit $(whoami)" > /etc/mu.conf
 eselect repository enable guru
 emaint sync -r guru
 emerge -a app-admin/mu
-chown root:root /usr/sbin/mu
-chmod u+s /usr/sbin/mu
+chown root:root /usr/bin/mu
+chmod u+s /usr/bin/mu
 echo "permit $(whoami)" > /etc/mu.conf
 ```
