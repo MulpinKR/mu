@@ -21,3 +21,5 @@ KEYWORDS="~amd64"
 
 DEPEND="virtual/libcrypt:="
 RDEPEND="${DEPEND}"
+
+QA_FLAGS_IGNORED="usr/bin/mu"
