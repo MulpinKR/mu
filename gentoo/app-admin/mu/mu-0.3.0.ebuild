@@ -8,7 +8,7 @@ CRATES=""
 
 inherit cargo
 
-DESCRIPTION="Minimal privilege escalation runner for Gentoo"
+DESCRIPTION="Minimal privilege escalation runner"
 HOMEPAGE="https://github.com/MulpinKR/mu"
 SRC_URI="
 	https://github.com/MulpinKR/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz
@@ -20,12 +20,6 @@ SLOT="0"
 KEYWORDS="~amd64"
 
 DEPEND="virtual/libcrypt:="
-RDEPEND="${DEPEND}"
+RDEPEND="virtual/libcrypt:= !net-mail/mu"
 
-QA_FLAGS_IGNORED="usr/sbin/mu"
-
-src_install() {
-	cargo_src_install
-	mkdir -p "${D}/usr/sbin" || die
-	mv "${D}/usr/bin/mu" "${D}/usr/sbin/mu" || die
-}
+QA_FLAGS_IGNORED="usr/bin/mu"
