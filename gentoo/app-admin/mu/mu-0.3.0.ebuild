@@ -22,4 +22,10 @@ KEYWORDS="~amd64"
 DEPEND="virtual/libcrypt:="
 RDEPEND="${DEPEND}"
 
-QA_FLAGS_IGNORED="usr/bin/mu"
+QA_FLAGS_IGNORED="usr/sbin/mu"
+
+src_install() {
+	cargo_src_install
+	mkdir -p "${D}/usr/sbin" || die
+	mv "${D}/usr/bin/mu" "${D}/usr/sbin/mu" || die
+}
